@@ -21,8 +21,8 @@ def search_per_group(name, year, group_code):
     page = 0
     while progress:
         progress, res = search_per_page(name, year, group_code, page)
-        if res:
-            return res
+        for entry in res:
+            print(create_link(*entry))
         page += 1
 
 
@@ -34,16 +34,12 @@ def search_per_year(name, year):
         7,  # هنر
         9,  # زبان
     ]:
-        res = search_per_group(name, year, group_code)
-        if res:
-            return res
+        search_per_group(name, year, group_code)
 
 
 def search(name, start_year=97):
     for year in range(start_year, 79, -1):
-        res = search_per_year(name, year)
-        if res:
-            return res
+        search_per_year(name, year)
 
 
 def create_link(year, pid):
@@ -51,7 +47,7 @@ def create_link(year, pid):
 
 
 def main():
-    print(create_link(*search(input())[0]))
+    search(input())
 
 
 if __name__ == '__main__':
