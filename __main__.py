@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 
-import json
 import re
 import requests
-from sys import argv
+from pprint import pprint
+from sys import argv, stderr
 
 
 def search_per_page(name, year, group_code, page):
-    pattern = r"<a[^>]*?href='/Public/StudentProfile\?year=(?P<year>[0-9]+)\&pid=(?P<pid>[0-9]+)'[^>]*?>[^<]*?%s" % name
-    res = json.loads(requests.post(
-        "http://www.kanoon.ir/Public/SuperiorsGroupBased.aspx/FillTableAjax",
-        data="{'gc':'%d','year':'%d','pageindex':'%d','persiancher':'-1','ssahmie':'0','yyearinkanoon':'0'}" % (group_code, year, page),
-        headers={'content-type': 'application/json'}
-    ).text)['d']
-    return res != "", re.findall(pattern, res)
+    pattern = r"(?s)<tr>.*?/Public/StudentProfile/(.*?)\">\s*([^<\r\n]+)\s*.*?</tr>"
+    response = requests.get(
+        "https://www.kanoon.ir/Public/ShowStudentListTable",
+        params={
+            "groupCode": group_code,
+            "year": year,
+            "pageindex": page,
+            "alphanum": -1,
+            "list": "t",
+        },
+    )
+    if response.status_code != 200:
+        print("Could not get response:\t%s" % response.status_code, file=stderr)
+        exit()
+    res = response.text
+    names_list = re.findall(pattern, res)
+    return res != "", map(
+        lambda t: {"name": t[1], "pid": t[0], "year": year, "group": group_code},
+        filter(lambda t: t[1] == name, names_list)
+    )
 
 
 def search_per_group(name, year, group_code):
@@ -22,8 +35,8 @@ def search_per_group(name, year, group_code):
     page = 0
     while progress:
         progress, res = search_per_page(name, year, group_code, page)
-        for entry in res:
-            print(create_link(*entry))
+        for person in res:
+            print_person(person)
         page += 1
 
 
@@ -38,13 +51,29 @@ def search_per_year(name, year):
         search_per_group(name, year, group_code)
 
 
+def translate_group(group):
+    return {
+        1: "ریاضی",
+        3: "تجربی",
+        5: "انسانی",
+        7: "هنر",
+        9: "زبان",
+    }.get(group, group)
+
+
 def search(name, start_year=97):
     for year in range(start_year, 79, -1):
         search_per_year(name, year)
 
 
-def create_link(year, pid):
-    return "http://www.kanoon.ir/Public/StudentProfile?year=%s&pid=%s" % (year, pid)
+def print_person(person):
+    person["link"] = create_link(person)
+    person["group"] = translate_group(person["group"])
+    print(pprint(person))
+
+
+def create_link(person):
+    return "http://www.kanoon.ir/Public/StudentProfile?year=%s&pid=%s" % (person["year"], person["pid"])
 
 
 def main():
