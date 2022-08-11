@@ -84,7 +84,7 @@ def create_link(person):
 
 def main():
     query = input("query:\t") if len(argv) < 2 else argv[1]
-    start_year = 1397 if len(argv) < 3 else int(argv[2])
+    start_year = 1401 if len(argv) < 3 else int(argv[2])
     fields = [
         "pid",
         "name",
