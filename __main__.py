@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+import csv
 import requests
 from pprint import pprint
 from sys import argv, stderr
@@ -84,8 +85,28 @@ def create_link(person):
 def main():
     query = input("query:\t") if len(argv) < 2 else argv[1]
     start_year = 1397 if len(argv) < 3 else int(argv[2])
-    for person in search(query, start_year):
-        print_person(person)
+    fields = [
+        "pid",
+        "name",
+        "year",
+        "group",
+        "city",
+        "major",
+        "university",
+        "total_rank",
+        "regional_rank",
+        "region",
+        "link",
+        "kanoon_score",
+        "kanoon_year",
+        "kanoon_tests",
+    ]
+    with open("result.csv", "w") as f:
+        writer = csv.DictWriter(f, fields)
+        writer.writeheader()
+        for person in search(query, start_year):
+            print_person(person)
+            writer.writerow(person)
 
 
 if __name__ == '__main__':
