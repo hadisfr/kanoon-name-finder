@@ -7,7 +7,7 @@ from sys import argv, stderr
 
 
 def search_per_page(query, year, group_code, page):
-    pattern = r"(?s)<tr>.*?/Public/StudentProfile/(.*?)\">\s*([^<\r\n]+)\s*.*?</tr>"
+    pattern = r"(?s)<tr>.*?/Public/StudentProfile/(?P<pid>.*?)\">\s*(?P<name>[^<\r\n]+)\s*</a>\s*</td>.*?>\s*(?P<city>[^<\r\n]+)\s*</td>.*?>\s*(?P<total_rank>[^<\r\n]+)\s*</td>.*?>\s*(?P<regional_rank>[^<\r\n]+)\s*</td>.*?>\s*(?P<region>[^<\r\n]+)\s*</td>.*?>\s*(?P<kanoon_year>[^<\r\n]+)\s*</td>.*?>\s*(?P<kanoon_score>[^<\r\n]+)\s*</td>.*?>\s*(?P<kanoon_tests>[^<\r\n]+)\s*</td>.*?>\s*(?P<major>[^<\r\n]+)\s*</td>.*?>\s*(?P<university>[^<\r\n]+)\s*</td>.*?</tr>"
     response = requests.get(
         "https://www.kanoon.ir/Public/ShowStudentListTable",
         params={
@@ -22,11 +22,14 @@ def search_per_page(query, year, group_code, page):
         print("Could not get response:\t%s" % response.status_code, file=stderr)
         exit()
     res = response.text
-    names_list = re.findall(pattern, res)
-    return res != "", map(
-        lambda t: {"name": t[1], "pid": t[0], "year": year, "group": group_code},
-        filter(lambda t: re.match(query, t[1]), names_list)
-    )
+    names_list = re.finditer(pattern, res)
+    return res != "", filter(lambda m: re.match(query, m["name"]), map(
+        lambda m: {**m, "year": year, "group": group_code},
+        map(
+            lambda match: match.groupdict(),
+            names_list,
+        )
+    ))
 
 
 def search_per_group(query, year, group_code):
