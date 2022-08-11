@@ -69,7 +69,7 @@ def translate_group(group):
 
 
 def search(query, start_year):
-    for year in range(start_year, 79, -1):
+    for year in range(start_year, 1379, -1):
         for person in search_per_year(query, year):
             yield person
 
