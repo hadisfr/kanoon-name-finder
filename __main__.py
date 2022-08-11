@@ -12,7 +12,7 @@ def search_per_page(name, year, group_code, page):
         "https://www.kanoon.ir/Public/ShowStudentListTable",
         params={
             "groupCode": group_code,
-            "year": year,
+            "year": year-1300,
             "pageindex": page,
             "alphanum": -1,
             "list": "t",
@@ -61,7 +61,7 @@ def translate_group(group):
     }.get(group, group)
 
 
-def search(name, start_year=97):
+def search(name, start_year=1397):
     for year in range(start_year, 79, -1):
         search_per_year(name, year)
 
