@@ -39,7 +39,7 @@ def search_per_group(query, year, group_code):
     while progress:
         progress, res = search_per_page(query, year, group_code, page)
         for person in res:
-            print_person(person)
+            yield person
         page += 1
 
 
@@ -51,7 +51,8 @@ def search_per_year(query, year):
         7,  # هنر
         9,  # زبان
     ]:
-        search_per_group(query, year, group_code)
+        for person in search_per_group(query, year, group_code):
+            yield person
 
 
 def translate_group(group):
@@ -66,7 +67,8 @@ def translate_group(group):
 
 def search(query, start_year):
     for year in range(start_year, 79, -1):
-        search_per_year(query, year)
+        for person in search_per_year(query, year):
+            yield person
 
 
 def print_person(person):
@@ -82,7 +84,8 @@ def create_link(person):
 def main():
     query = input("query:\t") if len(argv) < 2 else argv[1]
     start_year = 1397 if len(argv) < 3 else int(argv[2])
-    search(query, start_year)
+    for person in search(query, start_year):
+        print_person(person)
 
 
 if __name__ == '__main__':
