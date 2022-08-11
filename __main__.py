@@ -75,7 +75,7 @@ def search(query, start_year):
 def print_person(person):
     person["link"] = create_link(person)
     person["group"] = translate_group(person["group"])
-    print(pprint(person))
+    pprint(person)
 
 
 def create_link(person):
