@@ -6,7 +6,7 @@ from pprint import pprint
 from sys import argv, stderr
 
 
-def search_per_page(name, year, group_code, page):
+def search_per_page(query, year, group_code, page):
     pattern = r"(?s)<tr>.*?/Public/StudentProfile/(.*?)\">\s*([^<\r\n]+)\s*.*?</tr>"
     response = requests.get(
         "https://www.kanoon.ir/Public/ShowStudentListTable",
@@ -25,22 +25,22 @@ def search_per_page(name, year, group_code, page):
     names_list = re.findall(pattern, res)
     return res != "", map(
         lambda t: {"name": t[1], "pid": t[0], "year": year, "group": group_code},
-        filter(lambda t: t[1] == name, names_list)
+        filter(lambda t: re.match(query, t[1]), names_list)
     )
 
 
-def search_per_group(name, year, group_code):
+def search_per_group(query, year, group_code):
     print("%d (group %d)" % (year, group_code))
     progress = True
     page = 0
     while progress:
-        progress, res = search_per_page(name, year, group_code, page)
+        progress, res = search_per_page(query, year, group_code, page)
         for person in res:
             print_person(person)
         page += 1
 
 
-def search_per_year(name, year):
+def search_per_year(query, year):
     for group_code in [
         1,  # ریاضی
         3,  # تجربی
@@ -48,7 +48,7 @@ def search_per_year(name, year):
         7,  # هنر
         9,  # زبان
     ]:
-        search_per_group(name, year, group_code)
+        search_per_group(query, year, group_code)
 
 
 def translate_group(group):
@@ -61,9 +61,9 @@ def translate_group(group):
     }.get(group, group)
 
 
-def search(name, start_year=1397):
+def search(query, start_year):
     for year in range(start_year, 79, -1):
-        search_per_year(name, year)
+        search_per_year(query, year)
 
 
 def print_person(person):
@@ -73,12 +73,13 @@ def print_person(person):
 
 
 def create_link(person):
-    return "http://www.kanoon.ir/Public/StudentProfile?year=%s&pid=%s" % (person["year"], person["pid"])
+    return "http://www.kanoon.ir/Public/StudentProfile/%s" % person["pid"]
 
 
 def main():
-    name = input() if len(argv) == 1 else argv[1]
-    search(name)
+    query = input("query:\t") if len(argv) < 2 else argv[1]
+    start_year = 1397 if len(argv) < 3 else int(argv[2])
+    search(query, start_year)
 
 
 if __name__ == '__main__':
