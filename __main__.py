@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import re
 import json
+import re
 import requests
+from sys import argv
 
 
 def search_per_page(name, year, group_code, page):
@@ -47,7 +48,8 @@ def create_link(year, pid):
 
 
 def main():
-    search(input())
+    name = input() if len(argv) == 1 else argv[1]
+    search(name)
 
 
 if __name__ == '__main__':
