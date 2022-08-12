@@ -106,6 +106,8 @@ def main():
             person["group"] = translate_group(person["group"])
             print_person(person)
             del person["link"]
+            for field in person:
+                person[field] = str(person[field]).strip()
             writer.writerow(person)
 
 
