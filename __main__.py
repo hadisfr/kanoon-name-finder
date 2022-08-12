@@ -24,7 +24,7 @@ def search_per_page(query, year, group_code, page):
         exit()
     res = response.text
     names_list = re.finditer(pattern, res)
-    return filter(lambda m: re.match(query, m["name"]), map(
+    return bool(re.search(pattern, res)), filter(lambda m: re.match(r"\s*" + query + r"\s*", m["name"]), map(
         lambda m: {**m, "year": year, "group": group_code},
         map(
             lambda match: match.groupdict(),
@@ -34,14 +34,12 @@ def search_per_page(query, year, group_code, page):
 
 
 def search_per_group(query, year, group_code):
-    print("%d (group %d)" % (year, group_code))
+    print("%d %s" % (year, translate_group(group_code)))
     progress = True
     page = 0
     while progress:
-        progress = False
-        res = search_per_page(query, year, group_code, page)
+        progress, res = search_per_page(query, year, group_code, page)
         for person in res:
-            progress = True
             yield person
         page += 1
 
