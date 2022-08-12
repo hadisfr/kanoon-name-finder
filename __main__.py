@@ -75,8 +75,6 @@ def search(query, start_year):
 
 
 def print_person(person):
-    person["link"] = create_link(person)
-    person["group"] = translate_group(person["group"])
     pprint(person)
 
 
@@ -98,7 +96,6 @@ def main():
         "total_rank",
         "regional_rank",
         "region",
-        "link",
         "kanoon_score",
         "kanoon_year",
         "kanoon_tests",
@@ -107,7 +104,10 @@ def main():
         writer = csv.DictWriter(f, fields)
         writer.writeheader()
         for person in search(query, start_year):
+            person["link"] = create_link(person)
+            person["group"] = translate_group(person["group"])
             print_person(person)
+            del person["link"]
             writer.writerow(person)
 
 
